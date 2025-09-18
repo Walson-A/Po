@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, Pressable } from 'react-native';
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Gesture, GestureDetector, Directions } from "react-native-gesture-handler";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function App()
 {
@@ -13,7 +14,7 @@ export default function App()
   const [breakTime, setBreakTime] = useState<number>(5);
   const [remaining, setRemaining] = useState<number>(workTime);
   const [reset, setReset] = useState<boolean>(false);
-
+  const [buttonColor, setButtonColor] = useState<string>("#E0E0E0");
   const router = useRouter();
 
   // swipe gestures
@@ -53,7 +54,7 @@ export default function App()
       }, 1000);
       return () => clearInterval(id);
     }
-  }, [isRunning, currentPhase, breakTime, workTime]);
+  }, [isRunning, currentPhase, breakTime, workTime, remaining]);
 
   // Reset logic
   useEffect(() =>
@@ -67,23 +68,45 @@ export default function App()
     }
   }, [reset, workTime, breakTime, currentPhase]);
 
+  // Button Color logic
+  useEffect(() => 
+  {
+    if (isRunning) setButtonColor(currentPhase === "work" ? "#F2C94C" : "#6FCF97");
+    else setButtonColor("#E0E0E0");
+  }, [isRunning, currentPhase]);
+
   return (
     <GestureDetector gesture={gestures}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FFFFFF" }}>
-        <Text>{currentPhase === "work" ? "Votre session de travail se termine dans : " : "Votre pause se termine dans : "}</Text>
-        <Text style={{ fontSize: 48, fontWeight: "900", color: "#111" }}>{formatSeconds(remaining)}</Text>
-        <Pressable onPress={() => setIsRunning(r => !r)}>
-          <Text>{isRunning ? "Pause" : "Start"}</Text>
-        </Pressable>
-        <Pressable onPress={() => setReset(true)}>
-          <Text>Reset</Text>
-        </Pressable>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffffff" }}>
+        <View style={styles.container}>
+          <Pressable
+            style=
+            {[
+              styles.circle,
+              {
+                backgroundColor: buttonColor,
+                borderWidth: 2,
+                borderColor: currentPhase === "work" ? "#F2C94C" : "#6FCF97"
+              }
+            ]}
+            onPress={() => setIsRunning(r => !r)}
+          >
+            <Text style={styles.circleText}>
+              {formatSeconds(remaining)}
+            </Text>
+            {isRunning ? <Ionicons name="pause" size={48} color="#111" /> : <Ionicons name="play" size={48} color="#111" />}
+          </Pressable>
+          <Pressable onPress={() => setReset(true)}>
+            <Ionicons name="refresh" size={48} />
+          </Pressable>
+        </View>
+
         <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
           <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: "#F2C94C" }} />
           <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: "#6FCF97" }} />
         </View>
       </View>
-    </GestureDetector>
+    </GestureDetector >
   );
 }
 
@@ -95,5 +118,27 @@ function formatSeconds(s: number): string
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  circle: {
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5, // pour Android
+  },
+  circleText: {
+    fontSize: 42,
+    fontWeight: "bold",
+    color: "#111",
+  },
 });
