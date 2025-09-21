@@ -16,6 +16,8 @@ export default function App()
   const [reset, setReset] = useState<boolean>(false);
   const [buttonColor, setButtonColor] = useState<string>("#E0E0E0");
   const router = useRouter();
+  const [activeSlider, setActiveSlider] = useState<"work" | "break" | null>(null);
+  const [tempMinutes, setTempMinutes] = useState<number | null>(null);
 
   // swipe gestures
   const swipeLeft = Gesture.Fling()
@@ -77,39 +79,43 @@ export default function App()
 
   return (
     <GestureDetector gesture={gestures}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffffff" }}>
-        <View style={styles.container}>
-          <Pressable
-            style=
-            {[
-              styles.circle,
-              {
-                backgroundColor: buttonColor,
-                borderWidth: 2,
-                borderColor: currentPhase === "work" ? "#F2C94C" : "#6FCF97"
-              }
-            ]}
-            onPress={() => setIsRunning(r => !r)}
-          >
-            <Text style={styles.circleText}>
-              {formatSeconds(remaining)}
-            </Text>
-            {isRunning ? <Ionicons name="pause" size={48} color="#111" /> : <Ionicons name="play" size={48} color="#111" />}
-          </Pressable>
-          <Pressable onPress={() => setReset(true)}>
-            <Ionicons name="refresh" size={48} />
-          </Pressable>
-        </View>
+      <View style={styles.page}>
+        <Pressable
+          onPress={() => setIsRunning(r => !r)}
+          style={[
+            styles.circle,
+            { borderColor: currentPhase === "work" ? "#F2C94C" : "#6FCF97" }
+          ]}
+        >
+          <Text style={styles.time}>{formatSeconds(remaining)}</Text>
+          {isRunning
+            ? <Ionicons name="pause" size={36} color="#111" style={{ marginTop: 8 }} />
+            : <Ionicons name="play" size={36} color="#111" style={{ marginTop: 8 }} />
+          }
+        </Pressable>
 
-        <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
-          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: "#F2C94C" }} />
-          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: "#6FCF97" }} />
+        <Pressable onPress={() => setReset(true)} style={styles.resetBtn}>
+          <Ionicons name="refresh" size={28} color="#666" />
+        </Pressable>
+
+        <View style={styles.dotsRow}>
+          <Pressable
+            onPressIn={() => !activeSlider ? setActiveSlider("work") : null}
+            onPressOut={() => activeSlider ? setActiveSlider(null) : null}
+            style={[styles.dot, { backgroundColor: "#F2C94C" }]}
+          />
+
+          <Pressable
+            onPressIn={() => !activeSlider ? setActiveSlider("break") : null}
+            onPressOut={() => activeSlider ? setActiveSlider(null) : null}
+            style={[styles.dot, { backgroundColor: "#6FCF97" }]}
+          />
+
         </View>
       </View>
-    </GestureDetector >
+    </GestureDetector>
   );
 }
-
 function formatSeconds(s: number): string
 {
   let minutes: string = (Math.floor(s / 60)).toString().padStart(2, '0');
@@ -118,27 +124,38 @@ function formatSeconds(s: number): string
 }
 
 const styles = StyleSheet.create({
-  container: {
+  page: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "#FFF",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    gap: 24, // espace vertical propre
   },
   circle: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 5, // pour Android
+    width: 260, height: 260, borderRadius: 130,
+    backgroundColor: "#FFF",
+    justifyContent: "center", alignItems: "center",
+    borderWidth: 3,
+    shadowColor: "#000", shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 8 }, shadowRadius: 16,
+    elevation: 6,
   },
-  circleText: {
-    fontSize: 42,
-    fontWeight: "bold",
-    color: "#111",
+  time: { fontSize: 60, fontWeight: "900", color: "#111", letterSpacing: 1 },
+  resetBtn: {
+    padding: 10, borderRadius: 999, backgroundColor: "#F5F5F5",
+    shadowColor: "#000", shadowOpacity: 0.06, shadowOffset: { width: 0, height: 4 }, shadowRadius: 8,
+  },
+  dotsRow: { flexDirection: "row", alignItems: "center", gap: 18, marginTop: 4 },
+  dot: {
+    width: 40,
+    height: 40,
+    borderRadius: 35,
+    marginHorizontal: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 3, // Android
   },
 });
